@@ -1,0 +1,19 @@
+FROM bitnami/elasticsearch:8.8.2
+
+USER root
+
+RUN apt-get update && apt-get install -y python3 python3-pip \
+    && chown -R 1001:1001 /opt/bitnami/elasticsearch \
+    && chmod 775 /opt/bitnami/elasticsearch
+
+RUN pip3 install elasticsearch==8.8.2
+
+COPY elastic/create_index.py /usr/share/elasticsearch/scripts/create_index.py
+COPY elastic/custom_cmd.sh /usr/share/elasticsearch/scripts/custom_cmd.sh
+
+RUN chmod +x /usr/share/elasticsearch/scripts/custom_cmd.sh
+
+USER 1001
+
+ENTRYPOINT [ "/opt/bitnami/scripts/elasticsearch/entrypoint.sh" ]
+CMD [ "/usr/share/elasticsearch/scripts/custom_cmd.sh" ]

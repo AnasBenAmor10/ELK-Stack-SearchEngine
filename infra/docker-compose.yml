@@ -1,0 +1,88 @@
+version: '3.8'
+services:
+
+  elasticsearch:
+    container_name: elasticsearch-cntr
+    build:
+      context: .
+      dockerfile: elastic/Dockerfile.elastic
+    environment:
+      - cluster.name=kafka-cluster #This allows nodes in a cluster to be grouped under a common name, making it easier to manage
+      - bootstrap.memory_lock=true #Locks memory to prevent swapping (Swapping can cause significant delays for in-memory operations)
+      - discovery.type=single-node #Configure a cluster to function with  a mono-nœud mode .
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m #Define JVM option that maximum and minimum memory 512MB
+      - xpack.security.enabled=false #Désactivate the sécurité X-Pack (X-Pack includes various security features, such as authentication and encryption ) just to facilitate test
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data:rw #Mounting a volume for Elasticsearch data persistence.
+    ulimits: # Define System limites for the container
+      memlock:
+        soft: -1 #No soft limit 
+        hard: -1 #No hard limit
+    ports:
+      - "9200:9200" # HTTP Port for REST operation
+      - "9300:9300" #Communication port between cluster noeuds
+    stdin_open: true
+    tty: true
+    restart: always #Automatically restarts the container on failure.
+    networks:
+      - elk 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m" #Taille maximal of log file.
+        max-file: "50" #max number of log file
+    healthcheck: #hecks the health status of the service.
+      test: curl -u elastic:elastic -s -f elasticsearch-cntr:9200/_cat/health >/dev/null || exit 1 #Command to check health.
+      interval: 10s # Interval between checks.
+      timeout: 10s #Maximum waiting time for each check.
+      retries: 5 #Number of retries before considering the service unhealthy.
+
+  kibana:
+    container_name: kibana-cntr
+    image: bitnami/kibana:8.8.2
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    stdin_open: true
+    tty: true
+    restart: always
+    networks:
+      - elk
+    links: ['elasticsearch']
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+    healthcheck:
+      test: curl --fail http://kibana-cntr:5601 || exit 1
+      interval: 30s
+      retries: 3
+      timeout: 10s    
+
+  logstash:
+    build:
+      context: .
+      dockerfile: logstash/Dockerfile.logstash
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./data:/usr/share/logstash/data 
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+networks:
+  elk:
+    driver: bridge
+volumes:
+  elasticsearch_data:
+    driver: local    

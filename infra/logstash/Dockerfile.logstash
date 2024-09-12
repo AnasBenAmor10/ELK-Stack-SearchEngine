@@ -1,0 +1,19 @@
+# Use the Bitnami Logstash image as a base
+FROM bitnami/logstash:8.8.2
+
+USER root
+
+RUN rm -f /opt/bitnami/logstash/pipeline/logstash.conf
+COPY logstash/pipeline/logstash.conf /opt/bitnami/logstash/pipeline/logstash.conf
+
+RUN mkdir -p /opt/bitnami/logstash/data
+# Copy data directory contents into the container
+COPY data /opt/bitnami/logstash/data
+
+# Adjust permissions for the data directory
+RUN chown -R logstash:logstash /opt/bitnami/logstash/data && \
+    chmod -R 755 /opt/bitnami/logstash/data
+
+# Expose the necessary ports
+EXPOSE 5000 9600
+
