@@ -2,6 +2,11 @@ FROM bitnami/elasticsearch:8.8.2
 
 USER root
 
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update && apt-get install -y python3 python3-pip \
     && chown -R 1001:1001 /opt/bitnami/elasticsearch \
     && chmod 775 /opt/bitnami/elasticsearch

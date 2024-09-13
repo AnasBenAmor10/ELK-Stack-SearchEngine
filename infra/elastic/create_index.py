@@ -6,13 +6,7 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'scheme': 'http'}])
 # Define the index name
 index_name = "flickrphotos"
 
-# Check if the Elasticsearch index exists
-if es.indices.exists(index=index_name):
-    # Delete the index
-    es.indices.delete(index=index_name)
-    print(f"Index '{index_name}' has been deleted.")
-else:
-    print(f"Index '{index_name}' does not exist.")
+
 
 
 # Define the mapping for Elasticsearch index

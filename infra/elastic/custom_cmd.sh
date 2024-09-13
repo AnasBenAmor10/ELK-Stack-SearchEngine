@@ -26,6 +26,5 @@ python3 /usr/share/elasticsearch/scripts/create_index.py
 
 info "************************************ create_index_elastic executed successfully ************************************"
 
-
 # Keep the container running
 tail -f /dev/null
