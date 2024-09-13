@@ -51,10 +51,11 @@ To ensure seamless operation and management, our ELK-Stack-SearchEngine is built
 ## Setup and Running Instructions
 1. Build & Start the Docker Containers: 
     ```
-    docker-compose -f infra/docker-compose.yml up -d --build
+    docker compose -f infra/docker-compose.yml up -d --build
     ```
 2. Install Python dependencies:
     ```
+    cd Frontend
     pip install -r requirements.txt
     ```
 3. Run Streamlit app:
